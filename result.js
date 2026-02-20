@@ -12,8 +12,8 @@ async function fetchParticipants() {
     try {
         const { data, error } = await supabase
             .from('votes')
-            .select('participant_name')
-            .eq('room_id', roomId);
+            .select('user_name')
+            .eq('meeting_id', roomId);
 
         if (error) throw error;
 

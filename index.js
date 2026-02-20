@@ -29,17 +29,15 @@ btnContinue.addEventListener('click', async () => {
     }
 
     const meetingData = {
-        name: name,
-        start_date: start,
-        end_date: end,
-        type: selectedType,
-        created_at: new Date().toISOString()
+        title: name,
+        activity_type: selectedType,
+        dates: { start: start, end: end },
     };
 
     try {
         // ส่งข้อมูลเข้าตาราง 'rooms' ใน Supabase
         const { data, error } = await supabase
-            .from('rooms')
+            .from('meetings')
             .insert([meetingData])
             .select();
 
@@ -47,7 +45,7 @@ btnContinue.addEventListener('click', async () => {
 
         // เมื่อบันทึกสำเร็จ ให้ย้ายไปหน้า Dashboard พร้อมรหัสห้อง
         if (data && data.length > 0) {
-        window.location.href = `dashboard.html?id=${data[0].id}`;
+        window.location.href = `vote.html?id=${data[0].id}`;
         }
     } catch (err) {
         console.error("Error creating meeting:", err.message);

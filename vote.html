@@ -10,7 +10,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>คุณกำลังอยู่ในห้อง: <span id="roomName">Loading...</span></h1>
+
 
     <div class="info-box">
         <p><strong>Click each time slot to set your preference:</strong></p>
@@ -26,24 +26,15 @@
         <input type="text" id="nickname" placeholder="Enter your nickname">
     </div>
 
-    <table id="voteTable">
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Sat 1/10</th>
-                    <th>Sun 1/11</th>
-                    <th>Mon 1/12</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>9AM</td>
-                    <td class="vote-cell" id="slot-1-9am" data-state="0"></td>
-                    <td class="vote-cell" id="slot-2-9am" data-state="0"></td>
-                    <td class="vote-cell" id="slot-3-9am" data-state="0"></td>
-                </tr>
-            </tbody>
-    </table>
+
+
+    <h1 id = "roomNameDisplay"></h1id></h1>
+    <div class="voting-container">
+        <table id="votingTable" border="1">
+            <thead id="tableHeader"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
 
     <div class="actions">
         <button id="btnDownload">ดาวน์โหลดนัดหมาย (.ics)</button>
@@ -54,3 +45,4 @@
     <script type="module" src="script.js"></script>
 </body>
 </html>
+

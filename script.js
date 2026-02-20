@@ -1,126 +1,214 @@
-// 1. นำเข้าตัวเชื่อมต่อฐานข้อมูล (ต้องมีไฟล์ supabase-config.js อยู่ด้วย)
 import { supabase } from './supabase-config.js';
 
-// ดึง ID ห้องจาก URL (เช่น vote.html?id=xxxx)
+// 1. รับ ID จาก URL
 const params = new URLSearchParams(window.location.search);
 const roomId = params.get('id');
-const roomDisplay = document.getElementById('roomName');
 
-// แสดง ID ห้องบนหน้าจอ
-if (roomId && roomDisplay) {
-    roomDisplay.innerText = roomId;
+// 2. เริ่มต้นหน้าเว็บ
+async function initVotingPage() {
+  if (!roomId) {
+    alert("ไม่พบรหัสห้องประชุม");
+    return;
+  }
+
+  // ดึงข้อมูลการนัดหมายจาก Supabase
+  const { data: meeting, error } = await supabase
+    .from('meetings')
+    .select('*')
+    .eq('id', roomId)
+    .single();
+
+  if (error || !meeting) {
+    console.error("Error fetching meeting:", error);
+    document.getElementById('roomNameDisplay').innerText =
+      "ไม่พบข้อมูลห้องประชุม";
+    return;
+  }
+
+  // 3. แสดงชื่อห้องจริงแทน ID
+  document.getElementById(
+    'roomNameDisplay'
+  ).innerText = `คุณกำลังอยู่ในห้อง: ${meeting.title}`;
+
+  // 4. สร้างรายการวันที่ (Logic: วนลูปจาก Start Date ถึง End Date)
+  const startDate = new Date(meeting.dates.start);
+  const endDate = new Date(meeting.dates.end);
+  const dateList = [];
+
+  let currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    dateList.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // 5. สั่งวาดตาราง
+  renderGrid(dateList);
 }
 
-// ---------------------------------------------------------
-// 2. CELL TOGGLE LOGIC (ระบบคลิกเปลี่ยนสถานะ 3 จังหวะ)
-// ---------------------------------------------------------
-const voteTable = document.getElementById('voteTable');
+// ฟังก์ชันวาดตาราง HTML
+function renderGrid(dateList) {
+  const tableHeader = document.getElementById('tableHeader');
+  const tableBody = document.getElementById('tableBody');
 
-if (voteTable) {
-    voteTable.addEventListener('click', (e) => {
-        const cell = e.target;
+  tableHeader.innerHTML =  '';
+  tableBody.innerHTML = '';
 
-        // ตรวจสอบว่าคลิกที่ช่องตารางที่มีคลาส vote-cell เท่านั้น
-        if (cell.tagName === 'TD' && cell.classList.contains('vote-cell')) {
-            let currentState = parseInt(cell.getAttribute('data-state')) || 0;
+  // กำหนดช่วงเวลา (แก้ไขเพิ่ม/ลดได้ตรงนี้)
+  const timeSlots = [
+    "09:00", "10:00", "11:00", "12:00",
+    "13:00", "14:00", "15:00", "16:00",
+    "17:00", "18:00"
+  ];
 
-            // คำนวณสถานะถัดไป (0 -> 1 -> 2 -> 0)
-            // 0 = ขาว (0), 1 = เขียวเข้ม (2), 2 = เขียวอ่อน (1)
-            let nextState = (currentState + 1) % 3;
+  // วาดหัวตาราง (วันที่)
+  let headerHTML = '<th>เวลา</th>';
 
-            cell.setAttribute('data-state', nextState);
-            cell.className = `vote-cell state-${nextState}`;
-
-            // ใส่สีตามสถานะเพื่อให้เห็นภาพชัดเจน
-            if (nextState === 1) cell.style.backgroundColor = "#006400"; // เขียวเข้ม
-            else if (nextState === 2) cell.style.backgroundColor = "#90EE90"; // เขียวอ่อน
-            else cell.style.backgroundColor = "#ffffff"; // ขาว
-        }
+  dateList.forEach(date => {
+    const dStr = date.toLocaleDateString('th-TH', {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit'
     });
-}   
 
-// ---------------------------------------------------------
-// 3. SUBMIT LOGIC (บันทึกข้อมูลลง Database - อาทิตย์ที่ 3)
-// ---------------------------------------------------------
+    headerHTML += `<th>${dStr}</th>`;
+  });
+
+  tableHeader.innerHTML = headerHTML;
+
+  // วาดแถวเวลาและช่องโหวต
+  let bodyHTML = '';
+
+  timeSlots.forEach(time => {
+    bodyHTML += `<tr><td class="time-label">${time}</td>`;
+
+    dateList.forEach(date => {
+      const dateISO = date.toISOString().split('T')[0];
+
+      // สร้างช่องโหวตพร้อมเก็บข้อมูลเวลาและวันที่ไว้ใน Dataset
+      bodyHTML += `
+        <td class="vote-cell state-0"
+            data-state="0"
+            data-time="${time}"
+            data-date="${dateISO}">
+        </td>
+      `;
+    });
+
+    bodyHTML += '</tr>';
+  });
+
+  tableBody.innerHTML = bodyHTML;
+
+  // เมื่อวาดเสร็จ ให้เปิดใช้งานระบบคลิกเปลี่ยนสี
+  attachVotingLogic();
+}
+
+// ฟังก์ชันเปลี่ยนสีเมื่อคลิก (Logic 0 -> 1 -> 2)
+function attachVotingLogic() {
+  const cells = document.querySelectorAll('.vote-cell');
+
+  cells.forEach(cell => {
+    cell.addEventListener('click', () => {
+      let currentState = parseInt(cell.getAttribute('data-state'));
+      let nextState = (currentState + 1) % 3;
+
+      cell.setAttribute('data-state', nextState);
+      cell.className = `vote-cell state-${nextState}`;
+
+      // ปรับสีด่วนด้วย JS (เพื่อให้เห็นผลทันทีแม้ CSS ยังไม่โหลด)
+      const colors = [
+        "#ffffff", // ขาว
+        "#006400", // เขียวเข้ม
+        "#90EE90"  // เขียวอ่อน
+      ];
+
+      cell.style.backgroundColor = colors[nextState];
+    });
+  });
+}
+
+// รันฟังก์ชันหลัก
+initVotingPage();
+
+function copyInviteLink() {
+  // ดึง URL ปัจจุบันของหน้านี้ (ที่มี ?id=... ติดมาด้วย)
+  const currentUrl = window.location.href;
+
+  // ใช้คำสั่งก๊อปปี้ลง Clipboard
+  navigator.clipboard
+    .writeText(currentUrl)
+    .then(() => {
+      alert("ก๊อปปี้ลิงก์เชิญเพื่อนแล้ว! ส่งให้เพื่อนโหวตได้เลย");
+    })
+    .catch(err => {
+      console.error("Error in copying: ", err);
+    });
+}
+
+// ผูกฟังก์ชันกับปุ่ม (ถ้าคุณมีปุ่ม Share ใน HTML)
+const btnShare = document.getElementById("btnShare");
+
+if (btnShare) {
+  btnShare.onclick = copyInviteLink;
+}
+
 async function submitAvailability() {
-// ดึงชื่อเล่นจาก Input
-    const nicknameInput = document.getElementById('nickname');
-    const nickname = nicknameInput ? nicknameInput.value : "";
+  const nameInput = document.getElementById("nickname"); // ตรวจสอบ ID ช่องกรอกชื่อใน HTML
+  const userName = nameInput ? nameInput.value.trim() : "";
 
-    if (!nickname || nickname.trim() === "") {
-        alert("กรุณาใส่ชื่อเล่นก่อนบันทึกนะ!");
-        return;
+  // 1. ตรวจสอบว่ากรอกชื่อหรือยัง
+  if (!userName) {
+    alert("กรุณากรอกชื่อของคุณก่อนบันทึก");
+    return;
+  }
+
+  // 2. รวบรวมข้อมูลการโหวตจากตาราง
+  const voteData = {};
+  const cells = document.querySelectorAll(".vote-cell");
+
+  cells.forEach(cell => {
+    const time = cell.getAttribute("data-time");
+    const date = cell.getAttribute("data-date");
+    const state = parseInt(cell.getAttribute("data-state"));
+
+    // เก็บข้อมูลในรูปแบบ:
+    // { "2026-02-20": { "09:00": 1, "10:00": 2 }, ... }
+    if (!voteData[date]) {
+      voteData[date] = {};
     }
 
-    // รวบรวมข้อมูลคะแนนจากทุก Cell
-    const cells = document.querySelectorAll('.vote-cell');
-    let votes = {};
+    voteData[date][time] = state;
+  });
 
-    cells.forEach(cell => {
-        const state = parseInt(cell.getAttribute('data-state')) || 0;
-        let weight = 0;
-
-        if (state === 1) weight = 2; // เขียวเข้ม = 2 คะแนน
-        else if (state === 2) weight = 1; // เขียวอ่อน = 1 คะแนน
-
-        // ใช้ ID ของช่องเป็น Key เช่น "slot-1-9am": 2
-        votes[cell.id] = weight;
-    });
-
-    const payload = {
-        room_id: roomId,
-        participant_name: nickname,
-        availability_data: votes // ส่งก้อน JSON นี้ไป
-    };
-
-    try {
-        // ส่งข้อมูลเข้าตาราง votes ใน Supabase
-        const { error } = await supabase.from('votes').insert([payload]);
-
-        if (error) throw error;
-
-        alert("บันทึกข้อมูลโหวตสำเร็จ!");
-        // ไปหน้าสรุปผลพร้อมส่ง ID ไปด้วย
-        window.location.href = `results.html?id=${roomId}`;
-
-    } catch (err) {
-        console.error("Error saving to DB:", err.message);
-        alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
-    }
-}
-
-// ---------------------------------------------------------
-// 4. DOWNLOAD ICS (ฟังก์ชันเดิมจากอาทิตย์ที่ 1-2)
-// ---------------------------------------------------------
-const btnDownload = document.getElementById('btnDownload');
-if (btnDownload) {
-    btnDownload.onclick = function() {
-        try {
-            var cal = ics();
-            cal.addEvent("นัดทำโปรเจกต์", "มาเจอกันนะ", "ตึกคอม", "2026-02-10 10:00", "2026-02-10 12:00");
-            cal.download("my-plan");
-            alert("กำลังดาวน์โหลดไฟล์...");
-        } catch (error) {
-            console.error(error);
-            alert("เกิดข้อผิดพลาดในการโหลดไฟล์");
+  try {
+    // 3. ส่งข้อมูลไปที่ตาราง 'votes' ใน Supabase
+    const { data, error } = await supabase
+      .from("votes")
+      .insert([
+        {
+          meeting_id: roomId,   // ID ของห้องประชุมจาก URL
+          user_name: userName,  // ชื่อคนโหวต
+          vote_data: voteData   // ก้อนข้อมูลการโหวตแบบ JSON
         }
-    };
+      ])
+      .select();
+
+    if (error) throw error;
+
+    // 4. เมื่อบันทึกสำเร็จ ให้ไปหน้าแสดงผลลัพธ์
+    alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
+    window.location.href = `results.html?id=${roomId}`;
+
+  } catch (err) {
+    console.error("Error submitting vote:", err.message);
+    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + err.message);
+  }
 }
 
-// ผูกฟังก์ชันเข้ากับปุ่ม Submit (ใน HTML ต้องมีปุ่ม id="btnSubmit")
-const btnSubmit = document.getElementById('btnSubmit');
+// 5. ผูกฟังก์ชันกับปุ่ม Submit ในหน้า HTML
+const btnSubmit = document.getElementById("btnSubmit"); // ตรวจสอบ ID ปุ่มใน HTML
+
 if (btnSubmit) {
-    btnSubmit.onclick = submitAvailability;
-}
-
-// 5. บันทึกชื่อเล่นลง LocalStorage (เพื่อความสะดวกของผู้ใช้)
-const nameInput = document.getElementById('nickname');
-if (nameInput) {
-    // ดึงชื่อเดิมมาใส่ถ้ามี
-    nameInput.value = localStorage.getItem('userNickname') || "";
-
-    // บันทึกทุกครั้งที่พิมพ์
-    nameInput.oninput = () => {
-        localStorage.setItem('userNickname', nameInput.value);
-    };
+  btnSubmit.onclick = submitAvailability;
 }
