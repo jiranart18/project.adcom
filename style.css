@@ -1,0 +1,164 @@
+/* Reset */
+* {
+  box-sizing: border-box;
+}
+
+/* Page */
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  background: linear-gradient(135deg, #eef2f7, #e3ebf5);
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+/* Main Card */
+.container {
+  width: 100%;
+  max-width: 900px;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+
+/* Title */
+h1 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 30px;
+}
+
+/* Labels */
+label {
+  margin-top: 16px;
+  display: block;
+  font-weight: 600;
+}
+
+/* Inputs */
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  font-size: 15px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  transition: 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76,175,80,0.15);
+}
+
+/* Buttons */
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 24px;
+  font-size: 16px;
+  font-weight: bold;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+button:hover {
+  background: #43a047;
+  transform: translateY(-2px);
+}
+
+/* Voting cells */
+.cell {
+  padding: 12px;
+  margin-top: 8px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.cell:hover {
+  transform: scale(1.02);
+}
+
+.green {
+  background: #8BC34A;
+  color: white;
+}
+
+/* Voting Container */
+.voting-container {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+/* Table */
+#votingTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* Header */
+#votingTable thead {
+  background: #2c3e50;
+  color: white;
+}
+
+#votingTable th {
+  padding: 14px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Cells */
+#votingTable td {
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+  border-bottom: 1px solid #eee;
+}
+
+/* Hover */
+#votingTable td:hover {
+  background: #f1f5f9;
+}
+
+.vote-cell.state-0 {
+  background: white;
+}
+
+.vote-cell.state-1 {
+  background: #2e7d32;
+  color: white;
+}
+
+.vote-cell.state-2 {
+  background: #81c784;
+  color: white;
+}
+
+/* Submit Button */
+.btn-primary {
+  background: #4CAF50;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn-primary:hover {
+  background: #43a047;
+  transform: translateY(-2px);
+}

@@ -114,16 +114,9 @@ function attachVotingLogic() {
       let nextState = (currentState + 1) % 3;
 
       cell.setAttribute('data-state', nextState);
+
+      // เปลี่ยน class อย่างเดียว
       cell.className = `vote-cell state-${nextState}`;
-
-      // ปรับสีด่วนด้วย JS (เพื่อให้เห็นผลทันทีแม้ CSS ยังไม่โหลด)
-      const colors = [
-        "#ffffff", // ขาว
-        "#006400", // เขียวเข้ม
-        "#90EE90"  // เขียวอ่อน
-      ];
-
-      cell.style.backgroundColor = colors[nextState];
     });
   });
 }

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Meetings - GroupSync</title>
+    <script type="module" src="dashboard.js"></script>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="dashboard-page">
+
+    <div class="navbar">
+        GroupSync Dashboard
+    </div>
+
+    <div class="container">
+
+        <div class="header">
+            <h1>My Meetings</h1>
+            <button class="create-btn"
+                onclick="window.location.href='index.html'">
+                + Create New Meeting
+            </button>
+        </div>
+
+        <div class="stats-card">
+            <p>Active Meetings</p>
+            <h2 id="activeCount">0</h2>
+        </div>
+
+        <div class="meetings" id="meetingsContainer">
+            <div class="empty-state">
+                <p>Loading your meetings...</p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

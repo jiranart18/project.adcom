@@ -30,7 +30,7 @@ btnContinue.addEventListener('click', async () => {
 
     const meetingData = {
         title: name,
-        activity_type: selectedType,
+        type: selectedType,
         dates: { start: start, end: end },
     };
 
@@ -52,3 +52,11 @@ btnContinue.addEventListener('click', async () => {
         alert("Failed to create meeting. Please try again.");
     }
 });
+
+const today = new Date();
+
+// แปลงให้อยู่ในรูปแบบ YYYY-MM-DD
+const formattedDate = today.toISOString().split("T")[0];
+
+document.getElementById("startDate").value = formattedDate;
+document.getElementById("endDate").value = formattedDate;
