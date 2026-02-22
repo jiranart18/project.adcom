@@ -243,10 +243,10 @@ async function renderFinalized(datetime) {
             ),
             '_blank'
           )">
-            📅 เปิดใน Google Calendar
+             เปิดใน Google Calendar
           </button>
           <button onclick="copyShareMessage('${datetime}')">
-            🔗 ลิงก์ส่งให้เพื่อน
+             ลิงก์ส่งให้เพื่อน
           </button>
         `        
         : ""
