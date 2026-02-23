@@ -1,6 +1,5 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-// เปลี่ยนตรงนี้เป็นค่าจากโปรเจกต์ของคุณ
 const supabaseUrl = 'https://kqdjyqmdmmjdyfrooobs.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxZGp5cW1kbW1qZHlmcm9vb2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NTkwMzIsImV4cCI6MjA4NjAzNTAzMn0.vIBOf5pxcs7FINIPVxx-C0BDnB-evINt40_E1imjm9M';
 

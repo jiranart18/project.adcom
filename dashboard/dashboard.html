@@ -1,19 +1,15 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Meetings - GroupSync</title>
-
-    <link rel="stylesheet" href="dashboard.css">
     <script type="module" src="dashboard.js"></script>
     <link rel="stylesheet" href="dashboard.css">
 </head>
-<body>
+<body class="dashboard-page">
 
-    <nav class="navbar">
-        <div class="logo">📅 GroupSync</div>
-    </nav>
+    <div class="navbar">
+        GroupSync Dashboard
+    </div>
 
     <div class="container">
 
@@ -30,10 +26,9 @@
             <h2 id="activeCount">0</h2>
         </div>
 
-        <div id="meetingsContainer" class="meetings">
+        <div class="meetings" id="meetingsContainer">
             <div class="empty-state">
-                <p>🚫 No meetings yet</p>
-                <small>Create your first meeting to get started</small>
+                <p>Loading your meetings...</p>
             </div>
         </div>
 

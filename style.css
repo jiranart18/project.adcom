@@ -1,0 +1,105 @@
+:root {
+  --primary: #6B705C;        /* เขียวมะกอกน้ำตาล */
+  --primary-dark: #4F553F;   /* ตอน hover */
+  --primary-light: #A5A58D;  /* อ่อน */
+  --background: #F5F3EF;
+  --background-soft: #EAE7DC;
+  --card-bg: #FFFFFF;
+  --text-dark: #3A3A32;
+}
+
+/* Reset */
+* {
+  box-sizing: border-box;
+}
+
+/* Page */
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  background: linear-gradient(135deg, var(--background), var(--background-soft));
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+  color: var(--text-dark);
+}
+
+/* Main Card */
+.container {
+  width: 100%;
+  max-width: 900px;
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+}
+
+/* Title */
+h1 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 30px;
+}
+
+/* Labels */
+label {
+  margin-top: 16px;
+  display: block;
+  font-weight: 600;
+}
+
+/* Inputs */
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  font-size: 15px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  transition: 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(107,112,92,0.2);
+}
+
+/* Buttons */
+button,
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  margin-top: 24px;
+  font-size: 16px;
+  font-weight: bold;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: 0 6px 18px rgba(107,112,92,0.25);
+}
+
+button:hover,
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+/* Voting Table */
+#votingTable thead {
+  background: var(--primary);
+  color: white;
+}
+
+.vote-cell.state-2 {
+  background: var(--primary);
+  color: white;
+}
+
+.vote-cell.state-1 {
+  background: var(--primary-light);
+  color: black;
+}
