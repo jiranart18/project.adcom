@@ -319,7 +319,18 @@ window.copyGoogleLink = function(title, date, time) {
   });
 }
 
-window.copyShareMessage = function(datetime) {
+window.copyShareMessage = async function(datetime) {
+
+  const { data: meeting } = await supabase
+    .from("meetings")
+    .select("title")
+    .eq("id", roomId)
+    .single();
+
+  if (!meeting) {
+    alert("ไม่พบข้อมูลห้องประชุม");
+    return;
+  }
 
   const [date, time] = datetime.split(" ");
 
@@ -334,17 +345,21 @@ window.copyShareMessage = function(datetime) {
     `${window.location.origin}/ics.html?id=${roomId}`;
 
   const message =
-    `นัดหมาย 
+  `นัดหมาย
 
-    🟢 คนใช้ Google Calendar:
-    ${googleLink}
+  🟢 คนใช้ Google Calendar:
+  ${googleLink}
 
-    🔵 คนใช้ Apple / Outlook / อื่น ๆ:
-    ${icsLink}
+  🔵 คนใช้ Apple / Outlook / อื่น ๆ:
+  ${icsLink}
 
-    กดแล้วเพิ่มเข้าปฏิทินได้เลย`;
+  กดแล้วเพิ่มเข้าปฏิทินได้เลย`;
 
-  navigator.clipboard.writeText(message)
-    .then(() => alert("คัดลอกข้อความส่งเพื่อนแล้ว!"))
-    .catch(() => alert("คัดลอกไม่สำเร็จ"));
+  try {
+    await navigator.clipboard.writeText(message);
+    alert("คัดลอกข้อความส่งเพื่อนแล้ว!");
+  } catch (err) {
+    console.error(err);
+    alert("คัดลอกไม่สำเร็จ");
+  }
 };
