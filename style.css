@@ -1,28 +1,41 @@
 /* Reset */
-* {
+/**{
   box-sizing: border-box;
-}
+}*/
 
 /* Page */
-body {
+/*body {
   font-family: 'Segoe UI', Arial, sans-serif;
   margin: 0;
   background: linear-gradient(135deg, #eef2f7, #e3ebf5);
   display: flex;
   justify-content: center;
   padding: 40px 16px;
+}*/
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f6f9;
+}
+
+/* Main Container */
+.container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
 }
 
 
 /* Main Card */
-.container {
+/*.container {
   width: 100%;
   max-width: 900px;
   background: white;
   padding: 30px;
   border-radius: 16px;
   box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-}
+}*/
 
 /* Title */
 h1 {
@@ -74,6 +87,8 @@ button:hover {
   background: #474405;
   transform: translateY(-2px);
 }
+
+
 
 /* Voting cells */
 .cell {

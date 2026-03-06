@@ -13,7 +13,7 @@ async function initVotingPage() {
 
   // ดึงข้อมูลการนัดหมายจาก Supabase
   const { data: meeting, error } = await supabase
-    .from('meetings')
+    .from('rooms')
     .select('*')
     .eq('id', roomId)
     .single();
@@ -131,30 +131,19 @@ function attachVotingLogic() {
 // รันฟังก์ชันหลัก
 initVotingPage();
 
-async function copyInviteLink() {
+function copyInviteLink() {
+  // ดึง URL ปัจจุบันของหน้านี้ (ที่มี ?id=... ติดมาด้วย)
   const currentUrl = window.location.href;
 
-  // ✅ ถ้ารองรับ Web Share API (มือถือส่วนใหญ่รองรับ)
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: "GroupSync - Vote for Meeting",
-        text: "เข้ามาโหวตเวลานัดหมายกัน 👇",
-        url: currentUrl
-      });
-    } catch (err) {
-      console.error("Share cancelled or failed:", err);
-    }
-  } 
-  // ❌ ถ้าไม่รองรับ (เช่น Desktop บาง browser)
-  else {
-    try {
-      await navigator.clipboard.writeText(currentUrl);
-      alert("ลิงก์ถูกคัดลอกแล้ว! ส่งให้เพื่อนได้เลย 🎉");
-    } catch (err) {
-      console.error("Copy failed:", err);
-    }
-  }
+  // ใช้คำสั่งก๊อปปี้ลง Clipboard
+  navigator.clipboard
+    .writeText(currentUrl)
+    .then(() => {
+      alert("ก๊อปปี้ลิงก์เชิญเพื่อนแล้ว! ส่งให้เพื่อนโหวตได้เลย");
+    })
+    .catch(err => {
+      console.error("Error in copying: ", err);
+    });
 }
 
 // ผูกฟังก์ชันกับปุ่ม (ถ้าคุณมีปุ่ม Share ใน HTML)
@@ -192,21 +181,29 @@ async function submitAvailability() {
     voteData[date][time] = state;
   });
 
-  try {
-    // 3. ส่งข้อมูลไปที่ตาราง 'votes' ใน Supabase
-    const { data, error } = await supabase
-      .from("votes")
-      .insert([
-        {
-          meeting_id: roomId,   // ID ของห้องประชุมจาก URL
-          user_name: userName,  // ชื่อคนโหวต
-          vote_data: voteData   // ก้อนข้อมูลการโหวตแบบ JSON
-        }
-      ])
-      .select();
+  // ใน script.js ส่วน function submitAvailability
+try {
+  // 1. ตรวจสอบค่าก่อนส่ง
+  if (!userName) { alert("กรุณากรอกชื่อ"); return; }
+  
+  // 2. ส่งข้อมูล (ใช้ชื่อให้ตรงกับ SQL เป๊ะๆ)
+  const { error: insertError } = await supabase
+    .from("votes")
+    .insert([
+      {
+        meeting_id: roomId,
+        user_name: userName,
+        vote_data: voteData // <--- ชื่อต้องตรงกับใน SQL และ Supabase Dashboard
+      }
+    ]);
 
-    if (error) throw error;
-
+  if (insertError) {
+    // ถ้า Error เพราะหาคอลัมน์ไม่เจอ ให้แจ้งเตือนชัดเจน
+    if (insertError.message.includes("column")) {
+      console.error("Database Mismatch: เช็คชื่อคอลัมน์ใน Supabase ว่าใช่ vote_data หรือไม่?");
+    }
+    throw insertError;
+  }
     // 4. เมื่อบันทึกสำเร็จ ให้ไปหน้าแสดงผลลัพธ์
     alert("บันทึกข้อมูลเรียบร้อยแล้ว!");
     window.location.href = `results.html?id=${roomId}`;

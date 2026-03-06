@@ -33,7 +33,7 @@ async function isCreator() {
   const localToken = localStorage.getItem("creatorToken");
 
   const { data } = await supabase
-    .from("meetings")
+    .from("rooms")
     .select("creator_token")
     .eq("id", roomId)
     .single();
@@ -49,7 +49,7 @@ async function isCreator() {
 async function loadResults() {
 
   const { data: meeting } = await supabase
-    .from("meetings")
+    .from("rooms")
     .select("*")
     .eq("id", roomId)
     .single();
@@ -208,7 +208,7 @@ window.selectTime = async function(datetime) {
   if (!confirmSelect) return;
 
   await supabase
-    .from("meetings")
+    .from("rooms")
     .update({
       selected_time: datetime,
       status: "finalized"
@@ -224,7 +224,7 @@ window.selectTime = async function(datetime) {
 async function renderFinalized(datetime) {
 
   const { data: meeting } = await supabase
-    .from("meetings")
+    .from("rooms")
     .select("title")
     .eq("id", roomId)
     .single();
@@ -322,7 +322,7 @@ window.copyGoogleLink = function(title, date, time) {
 window.copyShareMessage = async function(datetime) {
 
   const { data: meeting } = await supabase
-    .from("meetings")
+    .from("rooms")
     .select("title")
     .eq("id", roomId)
     .single();

@@ -1,5 +1,5 @@
 // --- หน้า dashboard.html (My Meetings) ---
-/*async function loadMyMeetings() {
+async function loadMyMeetings() {
     try {
         const { data: rooms, error } = await supabase
             .from('rooms')
@@ -25,52 +25,4 @@
     } catch (err) {
         console.error("Error loading meetings:", err.message);
     }
-}*/
-import { supabase } from './supabase-config.js';
-
-async function checkAuth() {
-    const { data } = await supabase.auth.getSession();
-
-    if (!data.session) {
-        window.location.href = "login.html";
-    }
 }
-
-async function loadMyMeetings() {
-
-    const { data: userData } = await supabase.auth.getUser();
-
-    const { data: meetings, error } = await supabase
-        .from('meetings')
-        .select('*')
-        .eq('user_id', userData.user.id);   // ✅ filter ตาม owner
-
-    const container = document.getElementById('meetingsContainer');
-
-    if (!meetings || meetings.length === 0) {
-        container.innerHTML = `<p>No meetings yet.</p>`;
-        return;
-    }
-
-    container.innerHTML = meetings.map(meeting => `
-        <div class="meeting-card">
-            <h3>${meeting.title}</h3>
-            <p>${meeting.dates.start} - ${meeting.dates.end}</p>
-            <button onclick="location.href='results.html?id=${meeting.id}'">
-                View Results
-            </button>
-            <button onclick="location.href='vote.html?id=${meeting.id}'">
-                Add Availability
-            </button>
-        </div>
-    `).join('');
-}
-
-async function logout() {
-    await supabase.auth.signOut();
-    window.location.href = "login.html";
-}
-
-window.logout = logout;
-
-checkAuth().then(loadMyMeetings);
