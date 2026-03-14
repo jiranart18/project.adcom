@@ -7,8 +7,6 @@ if (!roomId) {
   document.body.innerHTML = "ไม่พบรหัสห้อง";
 }
 
-loadICS();
-
 async function loadICS() {
     const params = new URLSearchParams(window.location.search);
     const roomId = params.get("id");
