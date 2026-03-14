@@ -10,39 +10,51 @@ if (!roomId) {
 loadICS();
 
 async function loadICS() {
-  try {
+    const params = new URLSearchParams(window.location.search);
+    const roomId = params.get("id");
+
+    if (!roomId) {
+        document.body.innerHTML = "<h2>❌ ไม่พบรหัสห้องใน URL</h2>";
+        return;
+    }
+
+    document.body.innerHTML = "<h2>⏳ กำลังดึงข้อมูลการนัดหมาย...</h2>";
+
+    // เปลี่ยน "meetings" เป็นชื่อตารางที่คุณใช้จริงใน Supabase (เช่น "rooms")
     const { data: meeting, error } = await supabase
-      .from("meetings") // ตรวจสอบชื่อ Table อีกครั้ง
-      .select("*")      // ดึงมาทั้งหมดก่อนเพื่อเช็คชื่อ Column
-      .eq("id", roomId)
-      .single();
+        .from("meetings") 
+        .select("*")
+        .eq("id", roomId)
+        .single();
 
-    if (error || !meeting) throw new Error("ไม่พบข้อมูลการนัดหมาย");
+    if (error || !meeting) {
+        console.error("Supabase Error:", error);
+        document.body.innerHTML = "<h2>❌ ไม่พบข้อมูลห้องนี้ในฐานข้อมูล</h2>";
+        return;
+    }
 
-    // สมมติว่าใช้ Column ชื่อ meeting_name และ selected_time
+    // ตรวจสอบชื่อ Column (ถ้าใน DB ใช้ meeting_name ให้แก้ตรงนี้)
     const title = meeting.title || meeting.meeting_name || "GroupSync Meeting";
     const timeValue = meeting.selected_time;
 
     if (!timeValue) {
-      document.body.innerHTML = "<h2>⚠️ ยังไม่ได้เลือกเวลานัดหมาย</h2>";
-      return;
+        document.body.innerHTML = "<h2>⚠️ ห้องนี้ยังไม่ได้เลือกเวลานัดหมายที่สรุปผล</h2>";
+        return;
     }
 
-    // แก้ปัญหาเรื่องฟอร์แมตวันที่ (รองรับทั้งแบบมี T และไม่มี T)
-    const normalizedTime = timeValue.replace(" ", "T");
-    const start = new Date(normalizedTime);
-    
-    if (isNaN(start.getTime())) throw new Error("รูปแบบวันที่ไม่ถูกต้อง");
+    try {
+        const [date, time] = timeValue.split(" ");
+        const start = new Date(`${date}T${time}:00`);
+        const end = new Date(start.getTime() + 60 * 60 * 1000);
 
-    const end = new Date(start.getTime() + 60 * 60 * 1000);
+        const cal = ics();
+        cal.addEvent(title, "Scheduled via GroupSync", "Online", start.toISOString(), end.toISOString());
+        cal.download(title);
 
-    const cal = ics();
-    cal.addEvent(title, "Scheduled via GroupSync", "Online", start, end);
-    cal.download(title);
-
-    document.body.innerHTML = `<h2>✅ ดาวน์โหลดไฟล์ ${title}.ics สำเร็จ</h2>`;
-  } catch (err) {
-    console.error(err);
-    document.body.innerHTML = `<h2>❌ เกิดข้อผิดพลาด: ${err.message}</h2>`;
-  }
+        document.body.innerHTML = `<h2>✅ ดาวน์โหลดไฟล์ ${title}.ics สำเร็จ!</h2><p><a href="dashboard.html">กลับไปหน้าหลัก</a></p>`;
+    } catch (e) {
+        document.body.innerHTML = "<h2>❌ รูปแบบวันที่ในฐานข้อมูลไม่ถูกต้อง</h2>";
+    }
 }
+
+loadICS();
