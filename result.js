@@ -215,7 +215,7 @@ function renderTop3(top3) {
 
   bestTimeContainer.innerHTML = `
     <h3>Top 3 Best Times</h3>
-    ${top3.map(([datetime, score], index) => `
+    ${top3.map(([datetime, score], createmeetP) => `
       <div class="best-time-card">
         <br>
         ${formatDateTime(datetime)}<br>
