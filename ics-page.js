@@ -22,7 +22,7 @@ async function loadICS() {
 
     // เปลี่ยน "meetings" เป็นชื่อตารางที่คุณใช้จริงใน Supabase (เช่น "rooms")
     const { data: meeting, error } = await supabase
-        .from("votes") 
+        .from("rooms") 
         .select("*")
         .eq("id", roomId)
         .single();
