@@ -36,13 +36,15 @@
                     return;
                 }
 
-                // สร้างไฟล์ ICS
-                const cal = ics();
-                const start = new Date(time.replace(" ", "T"));
-                const end = new Date(start.getTime() + 60 * 60 * 1000); 
+                // สมมติ time คือ "2026-03-18 09:00"
+                const parts = time.split(/[- :]/); // แยกปี เดือน วัน ชั่วโมง นาที
+                // เดือนใน JS เริ่มที่ 0 ดังนั้นต้อง -1
+                const startDate = new Date(parts[0], parts[1]-1, parts[2], parts[3], parts[4]);
+                const endDate = new Date(startDate.getTime() + (60 * 60 * 1000)); // บวก 1 ชม.
 
-                cal.addEvent(title, "นัดหมายจาก GroupSync", "Online", start, end);
-                cal.download(title); // <--- บรรทัดนี้จะทำให้ไฟล์เด้งโหลดลงเครื่องคนกดทันที!
+                const cal = ics();
+                cal.addEvent(title, "นัดหมาย", "Online", startDate, endDate);
+                cal.download(title);
 
                 document.getElementById('status').innerText = "✅ ดาวน์โหลดสำเร็จ!";
             } catch (e) {
