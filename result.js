@@ -30,19 +30,25 @@ async function init() {
 // Check Creator
 // -------------------
 async function isCreator() {
-  const localToken = localStorage.getItem("creatorToken");
+  // 1. ดึงข้อมูล User ที่กำลัง Login อยู่ใน Browser นี้ (ถ้ามี)
+  const { data: { session } } = await supabase.auth.getSession();
+  const currentUser = session?.user;
 
-  const { data } = await supabase
+  // 2. ดึงข้อมูลห้องเพื่อดูว่าใครคือเจ้าของ (เช็คจากคอลัมน์ creator_id)
+  const { data: room } = await supabase
     .from("rooms")
-    .select("creator_token")
+    .select("creator_id") // เปลี่ยนจาก creator_token เป็น creator_id
     .eq("id", roomId)
     .single();
 
-  if (!data) return false;
+  if (!room) return false;
 
-  return data.creator_token === localToken;
+  // 3. ถ้าไม่ได้ Login เลย ให้ซ่อนปุ่มจัดการ
+  if (!currentUser) return false;
+
+  // 4. เทียบ ID: ถ้าคนเปิดคือคนเดียวกับคนสร้าง ให้คืนค่า true
+  return room.creator_id === currentUser.id;
 }
-
 // -------------------
 // Load Results 
 // -------------------
@@ -86,12 +92,21 @@ async function loadResults() {
     return;
   }
 
-  // 6. เช็คสิทธิ์ Creator: ถ้าใช่ ให้คำนวณ Top 3
-  const creator = true;
+ // 6. เช็คสิทธิ์ Creator: ใช้ฟังก์ชันเช็คจากระบบ Login (async/await)
+  const creator = await isCreator();
+
   if (creator) {
+    // ถ้าเป็นเจ้าของ: ให้คำนวณ Top 3 และโชว์ปุ่มเลือกเวลา
     calculateTop3(votes, meeting.type);
   } else {
-    bestTimeContainer.innerHTML = "<p style='text-align:center; color:#666;'>รอผู้สร้างเลือกเวลานัดหมาย... <br> (ตอนนี้โหวตไปแล้ว " + votes.length + " คน)</p>";
+    // ถ้าเป็นเพื่อน: ให้โชว์ข้อความรอเจ้าของสรุป 
+    bestTimeContainer.innerHTML = `
+      <div style="text-align:center; padding: 20px; background: #f9f9f9; border-radius: 15px;">
+        <p style="font-size: 1.2em;">⏳</p>
+        <p style="color:#666; margin:0;">รอผู้สร้างเลือกเวลานัดหมาย...</p>
+        <small style="color:#999;">(ตอนนี้โหวตไปแล้ว ${votes.length} คน)</small>
+      </div>
+    `;
   }
 }
 
