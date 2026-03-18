@@ -269,7 +269,6 @@ window.selectTime = async function(datetime) {
 // Render Finalized
 // -------------------
 async function renderFinalized(datetime) {
-
   const { data: meeting } = await supabase
     .from("rooms")
     .select("title")
@@ -277,26 +276,37 @@ async function renderFinalized(datetime) {
     .single();
 
   const [date, time] = datetime.split(" ");
+  
+  // คำนวณเวลาจบ (บวกไป 1 ชม. สำหรับไฟล์ ICS)
+  const startTime = `${date} ${time}`;
+  const dEnd = new Date(`${date}T${time}:00`);
+  dEnd.setHours(dEnd.getHours() + 1);
+  const endTime = `${date} ${dEnd.toTimeString().split(' ')[0].substring(0, 5)}`;
 
-  const googleLink = generateGoogleCalendarLink(
-    meeting.title,
-    date,
-    time
-  );
+  const googleLink = generateGoogleCalendarLink(meeting.title, date, time);
 
   bestTimeContainer.innerHTML = `
-    <h3>✅ เวลาที่เลือกแล้ว</h3>
-    <p>${formatDateTime(datetime)}</p>
+    <div class="finalized-card">
+      <h3>✅ สรุปเวลาเรียบร้อยแล้ว</h3>
+      <div class="final-time">${formatDateTime(datetime)}</div>
+      
+      <div class="calendar-buttons">
+        <button class="btn-google" onclick="window.open('${googleLink}','_blank')">
+          Google Calendar
+        </button>
+        
+        <button class="btn-ics" onclick="generateICS('${meeting.title}', '${startTime}', '${endTime}')">
+          เพิ่มลง iPhone / อื่นๆ (ICS)
+        </button>
+      </div>
 
-    <button onclick="window.open('${googleLink}','_blank')">
-      add to Google Calendar
-    </button>
-    <button onclick="copyShareMessage('${datetime}')">
-             link to send to a friend
-    </button>
+      <hr>
+      <button class="btn-share" onclick="copyShareMessage('${datetime}')">
+        คัดลอกข้อความส่งให้เพื่อน
+      </button>
+    </div>
   `;
 }
-
 // -------------------
 // Format Date
 // -------------------
@@ -402,6 +412,47 @@ window.copyGoogleLink = function(title, date, time) {
   navigator.clipboard.writeText(link).then(() => {
     alert("คัดลอกลิงก์ Google Calendar แล้ว!");
   });
+}
+
+function generateICS(meetingTitle, startTime, endTime) {
+    // 1. จัดฟอร์แมตวันที่ให้ iPhone อ่านออก (ห้ามมี - และ :)
+    // สมมติ startTime มาเป็น "2026-03-20 09:00"
+    const formatDate = (dateStr) => {
+        return dateStr.replace(/[-:]/g, '').replace(' ', 'T') + '00';
+        // ผลลัพธ์จะได้เป็น: 20260320T090000
+    };
+
+    const start = formatDate(startTime);
+    const end = formatDate(endTime);
+
+    // 2. โครงสร้างไฟล์ที่ iOS ยอมรับ
+    const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//GroupSync//NONSGML v1.0//EN',
+        'METHOD:PUBLISH', // สำคัญ: ช่วยให้ iOS เด้งหน้า Add Event
+        'BEGIN:VEVENT',
+        `UID:${Date.now()}@groupsync.com`,
+        `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z`,
+        `DTSTART:${start}`,
+        `DTEND:${end}`,
+        `SUMMARY:${meetingTitle}`,
+        'DESCRIPTION:นัดหมายจากระบบ GroupSync',
+        'LOCATION:Online',
+        'END:VEVENT',
+        'END:VCALENDAR'
+    ].join('\r\n'); // ใช้ \r\n เพื่อความเป๊ะบน iOS
+
+    // 3. สร้างการดาวน์โหลด
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${meetingTitle}.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 window.copyShareMessage = async function(datetime) {
